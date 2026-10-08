@@ -11,15 +11,18 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="OP_", env_file=".env", extra="ignore")
 
     environment: str = "local"
-    # Retrieval score below which the matched runbook is low-confidence and the
-    # incident is flagged for human triage. Set so that a genuinely out-of-domain
-    # incident (no runbook really fits) is flagged rather than silently matched to
-    # the nearest book: in practice in-domain incidents score ~0.35+ and
-    # out-of-domain ones ~0.2 or less, so the gap sits around here. It is an
-    # operator dial — raise it to send more to a human, lower it to auto-match
-    # more — and it never bypasses the action gate: system-changing steps always
-    # need approval regardless.
-    min_confidence: float = 0.25
+    # Retrieval score below which the matched runbook is treated as low-confidence
+    # and the incident is flagged for human triage. On this runbook library a
+    # clearly in-domain incident scores ~0.35 and up, while an out-of-domain one
+    # (no runbook really fits) tops out around ~0.26 even when it shares an
+    # incidental symptom word, so 0.30 sits in the gap between the two. Two honest
+    # caveats: a very tersely described in-domain incident (one matching term) can
+    # fall below it and is sent to a human — the safe outcome; and this threshold
+    # is NOT the safety mechanism. It only rates the *match*; every system-changing
+    # step is gated behind explicit human approval regardless of confidence. It is
+    # an operator dial: raise it to send more to a human, lower it to auto-match
+    # more.
+    min_confidence: float = 0.30
     # LLM provider cascade for the triage summary; extractive fallback otherwise.
     llm_spec: str = "anthropic,openai,gemini,deepseek,ollama"
     llm_max_tokens: int = 200

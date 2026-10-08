@@ -39,4 +39,8 @@ sistema) con comando. Los diagnósticos de solo lectura son advisory y no bloque
 Sí, es coarse y depende del corpus: cerca del límite puede marcar un match bueno
 como débil o al revés. Por eso **yerro hacia marcar** (needs_human_triage): es la
 dirección segura, y el umbral es donde el equipo calibra según crezca su biblioteca
-de runbooks. Prefiero un falso "revísalo" a un falso "confía".
+de runbooks. Prefiero un falso "revísalo" a un falso "confía". Pero el punto clave:
+el umbral **no es la seguridad**, solo califica el match. Ningún paso que cambie el
+sistema se ejecuta por confianza alta; de eso se encarga la aprobación humana, pase
+lo que pase con el coseno. Lo coloqué (0,30) en el hueco medido: dominio ~0,35+,
+fuera de dominio ~0,26 o menos.

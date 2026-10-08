@@ -48,13 +48,25 @@ intended:
 
 ## Retrieval and the confidence flag
 
-`RunbookLibrary` fits TF-IDF over each runbook's title, symptoms and step
-descriptions, and matches an incident by cosine similarity. The match carries a
-score. When the score is below `OP_MIN_CONFIDENCE`, the plan sets
-`needs_human_triage`: the best guess is still returned (it may help), but the
-assistant signals that it is not confident the right runbook was found, so a human
-should decide rather than trust the match. This is the same posture as the other
-retrieval tools in the portfolio — surface uncertainty, do not hide it.
+`RunbookLibrary` fits TF-IDF over each runbook's **title and symptoms** — the
+recognisable signature of the incident — and matches an incident by cosine
+similarity. Step descriptions are deliberately left out of the match corpus:
+they are remediation ("rotate the logs", "identify the hottest process") and
+indexing them made unrelated incidents collide on operational verbs (an "on-call
+rotation" question matched the log-rotation runbook). The vectoriser is a
+`FeatureUnion` of a word view (1–2 grams) and a character view (`char_wb` 3–5
+grams); the character n-grams absorb an operator's wording ("503s" for "503")
+that a word-only model would miss, which is what lets a reworded incident still
+reach the right runbook.
+
+The match carries a score. On this library an in-domain incident scores ~0.35+
+and an out-of-domain one ~0.26 or below, so `OP_MIN_CONFIDENCE` (0.30) sits in
+the gap. When the score is below it, the plan sets `needs_human_triage`: the best
+guess is still returned (it may help), but the assistant signals that it is not
+confident the right runbook was found, so a human should decide rather than trust
+the match. The threshold rates only the *match* — it is not the safety mechanism;
+the action gate below is. This is the same posture as the other retrieval tools in
+the portfolio — surface uncertainty, do not hide it.
 
 ## The gate is the whole safety model
 

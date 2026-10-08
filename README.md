@@ -31,7 +31,7 @@ incident response depends on. opspilot is built around two constraints:
 
 ```mermaid
 flowchart LR
-    A[Incident] --> B[Retrieve runbook<br/>TF-IDF match + confidence]
+    A[Incident] --> B[Retrieve runbook<br/>TF-IDF word + char match<br/>+ confidence]
     B --> C[Ground a plan<br/>steps from runbook + LLM triage summary]
     C --> D{Gate actions}
     D --> E[Advisory]
@@ -40,8 +40,12 @@ flowchart LR
 ```
 
 1. **Retrieve (`runbooks.py`).** TF-IDF + cosine similarity match the incident to
-   the most relevant runbook, with a confidence score. A weak match is flagged
-   `needs_human_triage` rather than acted on.
+   the most relevant runbook, with a confidence score. Matching is over each
+   runbook's **title and symptoms** — what the incident looks like — not its
+   remediation steps, and the vectoriser unions a word view (1–2 grams) with a
+   character view (`char_wb` 3–5 grams) so an operator's wording ("503s" vs "503")
+   still finds the right book. A weak match is flagged `needs_human_triage` rather
+   than acted on.
 2. **Ground (`assistant.py`).** The plan's steps come from the matched runbook.
    Each step inherits `requires_approval` iff it is an action with a command. An
    LLM writes a two-sentence triage summary grounded in the runbook; offline, an
@@ -52,6 +56,27 @@ flowchart LR
    action not yet approved), or **approved_dry_run** (approved — shown as a dry
    run). This is the entire safety model: a system-changing action is impossible
    without a recorded human decision.
+
+## Matching, confidence, and what the threshold is *not*
+
+Retrieval always returns a nearest runbook, so the confidence score is what tells
+a strong match from a stretch. On this runbook library the two populations
+separate cleanly:
+
+- a clearly in-domain incident ("database volume is full, writes failing") scores
+  **~0.35 and up**;
+- an out-of-domain one ("the SSO login redirect is looping"), even when it shares
+  an incidental symptom word, tops out around **~0.26**.
+
+`OP_MIN_CONFIDENCE` (default **0.30**) sits in that gap: below it, the plan is
+flagged `needs_human_triage`. Two honest caveats are worth stating plainly:
+
+- A *very tersely* described in-domain incident (only one word overlaps a runbook)
+  can score below the threshold and be sent to a human. That is the intended,
+  safe outcome — the match is genuinely uncertain.
+- **The threshold is not the safety mechanism.** It only rates the *match*. Even a
+  high-confidence match never runs a system-changing step on its own: that is the
+  job of the human-approval gate below, which applies regardless of confidence.
 
 ## Dry run only, on purpose
 
@@ -85,7 +110,7 @@ curl -s -X POST localhost:8000/plan -H 'content-type: application/json' \
 
 | Variable          | Default                                   | Meaning                               |
 | ----------------- | ----------------------------------------- | ------------------------------------- |
-| `OP_MIN_CONFIDENCE` | `0.08`                                  | Below this match score → human triage |
+| `OP_MIN_CONFIDENCE` | `0.30`                                  | Below this match score → human triage |
 | `OP_LLM_SPEC`     | `anthropic,openai,gemini,deepseek,ollama` | Provider cascade for the triage summary |
 | `OP_LLM_MAX_TOKENS` | `200`                                   | Max tokens per summary                |
 

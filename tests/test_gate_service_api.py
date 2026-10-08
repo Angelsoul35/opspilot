@@ -62,9 +62,7 @@ def test_api():
     assert triage.status_code == 200
     assert triage.json()["runbook_id"] == "rb-cert-expiry"
 
-    plan = client.post(
-        "/plan", json={"incident": "tls certificate expired", "approved": []}
-    )
+    plan = client.post("/plan", json={"incident": "tls certificate expired", "approved": []})
     assert plan.status_code == 200
     assert any(s["outcome"] == "awaiting_approval" for s in plan.json()["steps"])
 

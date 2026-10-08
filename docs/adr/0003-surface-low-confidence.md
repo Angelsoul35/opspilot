@@ -18,6 +18,13 @@ Keep the retrieval **confidence** (cosine score) and, when it is below
 is still returned — it may be a useful lead — but the plan explicitly says the
 match is weak and a human should decide.
 
+The default (0.30) is placed from the observed separation on this library:
+in-domain incidents score ~0.35+, out-of-domain ones ~0.26 or below, so the
+threshold sits in that gap. Crucially, this flag rates only the *match quality*;
+it is not what keeps the system safe. Even a high-confidence match never runs a
+system-changing step by itself — the human-approval gate (ADR 0002) does that,
+independent of confidence.
+
 ## Consequences
 
 - **No false confidence.** A weak match is labelled as such, so it is not followed
