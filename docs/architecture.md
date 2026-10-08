@@ -18,10 +18,16 @@ safety model.
 
 ## Data flow
 
-```
- incident ─▶ library.match ─▶ runbook + confidence
-          ─▶ assistant.triage ─▶ plan (steps from runbook, actions flagged) + summary
-          ─▶ gate.apply(plan, approved) ─▶ advisory / awaiting_approval / approved_dry_run
+```mermaid
+flowchart LR
+    A[Incident] --> B[library.match]
+    B --> C[Runbook + confidence]
+    C --> D[assistant.triage]
+    D --> E["Plan + summary<br/>steps from runbook, actions flagged"]
+    E --> F["gate.apply(plan, approved)"]
+    F --> G[advisory]
+    F --> H[awaiting_approval]
+    F --> I[approved_dry_run]
 ```
 
 ## Two safety properties, by construction

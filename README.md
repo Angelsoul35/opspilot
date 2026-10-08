@@ -23,11 +23,14 @@ incident response depends on. opspilot is built around two constraints:
 
 ## How it works
 
-```
- incident ─▶ retrieve runbook ─▶ ground a plan ─▶ gate actions
-            TF-IDF match         steps from the    advisory vs
-            (+ confidence)       runbook + LLM      awaiting-approval vs
-                                 triage summary     approved (dry run)
+```mermaid
+flowchart LR
+    A[Incident] --> B[Retrieve runbook<br/>TF-IDF match + confidence]
+    B --> C[Ground a plan<br/>steps from runbook + LLM triage summary]
+    C --> D{Gate actions}
+    D --> E[Advisory]
+    D --> F[Awaiting approval]
+    D --> G[Approved<br/>dry run]
 ```
 
 1. **Retrieve (`runbooks.py`).** TF-IDF + cosine similarity match the incident to

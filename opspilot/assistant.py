@@ -45,7 +45,7 @@ class Assistant:
         self,
         library: RunbookLibrary | None = None,
         llm: LLMClient | None = None,
-        min_confidence: float = 0.08,
+        min_confidence: float = 0.25,
         max_tokens: int = 200,
     ) -> None:
         self.library = library or RunbookLibrary()
