@@ -7,6 +7,12 @@ system-changing step gated behind **explicit human approval** and never executed
 beyond a dry run. It speeds up the first five minutes of an incident without
 taking the human out of the loop.
 
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-blue)](.github/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+---
+
 ## The shape of the problem
 
 An LLM that freely suggests `kubectl delete` during an outage is a liability: it
