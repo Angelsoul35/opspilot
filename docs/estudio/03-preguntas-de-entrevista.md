@@ -33,6 +33,24 @@ las tenga. Separar aconsejar de ejecutar es más seguro.
 `requires_approval` es verdadero si y solo si el paso es una acción (cambia el
 sistema) con comando. Los diagnósticos de solo lectura son advisory y no bloquean.
 
+## Sobre la evaluación
+
+**¿Cómo demuestras que la recuperación funciona, y no solo sobre tus ejemplos?**
+La mido sobre 3252 incidentes reales (`Loukh1/IT-incidents`): construyo un runbook
+por servicio con sus tickets de entrenamiento y enruto tickets no vistos a su
+servicio real. Reporto exactitud top-1/top-3 y macro-F1 con validación cruzada
+estratificada y una partición held-out, contra las referencias de mayoría y azar.
+Sobre los 12 servicios más frecuentes sale ~0.89 top-1 (~0.98 top-3, macro-F1
+~0.92).
+
+**¿Y cómo sabes que no está sobreajustado ni que el número es un artefacto?**
+Por dos cosas. El **gap** entre entrenamiento y prueba es ≈ 0 (train 0.898 vs test
+0.891) con desviación 0.008 entre particiones: generaliza, no memoriza; el
+veredicto es bien ajustado. Y un **control de etiquetas barajadas** —reconstruir
+los runbooks con pares (texto, servicio) revueltos— hace que la exactitud colapse a
+~0.08 (azar), lo que prueba que el acierto vive en el mapeo texto→servicio y no en
+la tubería. El detalle, con fórmulas, está en el capítulo 04.
+
 ## Pregunta trampa
 
 **El umbral de confianza es un coseno fijo; ¿no es frágil?**

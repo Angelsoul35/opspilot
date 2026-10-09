@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # and the incident is flagged for human triage. On this runbook library a
     # clearly in-domain incident scores ~0.35 and up, while an out-of-domain one
     # (no runbook really fits) tops out around ~0.26 even when it shares an
-    # incidental symptom word, so 0.30 sits in the gap between the two. Two honest
+    # incidental symptom word, so 0.30 sits in the gap between the two. Two precise
     # caveats: a very tersely described in-domain incident (one matching term) can
     # fall below it and is sent to a human — the safe outcome; and this threshold
     # is NOT the safety mechanism. It only rates the *match*; every system-changing

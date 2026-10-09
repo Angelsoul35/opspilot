@@ -9,8 +9,10 @@ assistant's advice is grounded in a vetted procedure rather than invented.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.pipeline import FeatureUnion
@@ -142,8 +144,35 @@ class RunbookLibrary:
         # so matching symptom-to-symptom is both more accurate and less noisy.
         return f"{rb.title}. {rb.symptoms}"
 
+    def _rank_row(self, sims: np.ndarray, k: int | None) -> list[Match]:
+        order = np.argsort(-sims, kind="stable")
+        if k is not None:
+            order = order[:k]
+        return [Match(self.runbooks[i], round(float(sims[i]), 4)) for i in order]
+
+    def rank_batch(self, incidents: Sequence[str], k: int | None = None) -> list[list[Match]]:
+        """Rank the runbooks for many incidents in one vectoriser pass.
+
+        Equivalent to calling :meth:`rank` on each incident, but transforms the
+        whole batch at once and scores it with a single cosine-similarity matmul,
+        which is what makes routing a large corpus of incidents tractable. The
+        model is identical to the single-incident path — same vectoriser, same
+        matrix, same tie-breaking.
+        """
+        queries = self._vectorizer.transform(list(incidents))
+        sims = cosine_similarity(queries, self._matrix)
+        return [self._rank_row(row, k) for row in sims]
+
+    def rank(self, incident: str, k: int | None = None) -> list[Match]:
+        """Rank every runbook against the incident by cosine similarity, best first.
+
+        Returns a list of :class:`Match` in descending score order; pass ``k`` to
+        cap it to the top ``k``. Ties keep library order (lowest-indexed runbook
+        first), so ``rank(incident, k=1)[0]`` is exactly what :meth:`match`
+        returns. This exposes the ranked candidate list that top-k retrieval
+        evaluation and a "show me the next-best runbook" flow both need.
+        """
+        return self.rank_batch([incident], k=k)[0]
+
     def match(self, incident: str) -> Match:
-        q = self._vectorizer.transform([incident])
-        sims = cosine_similarity(q, self._matrix).ravel()
-        best = int(sims.argmax())
-        return Match(self.runbooks[best], round(float(sims[best]), 4))
+        return self.rank(incident, k=1)[0]

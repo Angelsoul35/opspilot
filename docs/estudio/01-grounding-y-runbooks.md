@@ -46,7 +46,7 @@ puntúa ~0,35 o más y uno fuera de dominio ~0,26 o menos, así que
 `OP_MIN_CONFIDENCE` (0,30) cae en el hueco. Si está por debajo, el plan marca
 `needs_human_triage`: devuelve igual el mejor intento (puede ser una pista útil)
 pero avisa de que no está seguro de haber encontrado el runbook correcto, para que
-decida un humano. Dos matices honestos: un incidente del dominio descrito de forma
+decida un humano. Dos matices precisos: un incidente del dominio descrito de forma
 **muy escueta** (una sola palabra en común) puede caer por debajo y se deriva —el
 resultado seguro—; y el umbral **no es el mecanismo de seguridad**, solo califica
 el *match*. Ningún paso que cambie el sistema se ejecuta por confianza alta: de eso
@@ -61,3 +61,9 @@ recuperación: mostrar la incertidumbre, no esconderla.
   forma de escribir (palabra + carácter).
 - La confianza baja se marca (needs_human_triage), no se disfraza; y el umbral
   califica el match, no sustituye a la aprobación humana.
+
+El motor de recuperación no se queda en los runbooks de ejemplo: está **medido
+sobre 3252 incidentes reales** (dataset `Loukh1/IT-incidents`), enrutando cada
+ticket a su servicio. Cómo se mide eso —con fórmulas, validación cruzada y un
+control— está en el capítulo
+[04-evaluacion-datos-reales.md](04-evaluacion-datos-reales.md).

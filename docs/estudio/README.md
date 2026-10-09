@@ -13,6 +13,10 @@ qué" de cada decisión en tu idioma.
    pasos que cambian el sistema, por qué solo dry-run, y por qué no ejecuta.
 3. **[03-preguntas-de-entrevista.md](03-preguntas-de-entrevista.md)** — preguntas
    típicas y cómo responderlas con seguridad.
+4. **[04-evaluacion-datos-reales.md](04-evaluacion-datos-reales.md)** — cómo
+   demostramos el motor de recuperación sobre 3252 incidentes reales: métricas y
+   fórmulas (accuracy, top-k, macro-F1), sobre/subajuste y el gap, validación
+   cruzada y held-out, un ejemplo trabajado con los números medidos, y el control.
 
 ## Resumen en una frase
 

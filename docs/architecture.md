@@ -8,7 +8,9 @@ safety model.
 
 | Layer     | Module                 | Responsibility                                        |
 | --------- | ---------------------- | ----------------------------------------------------- |
-| Runbooks  | `opspilot/runbooks.py` | The runbook library and TF-IDF retrieval              |
+| Runbooks  | `opspilot/runbooks.py` | The runbook library and TF-IDF retrieval (`match`/`rank`) |
+| Real data | `opspilot/real_data.py`| Load/fetch the vendored real IT-incident dataset       |
+| Benchmark | `opspilot/real_benchmark.py` | Score runbook routing against real ticket services |
 | Assistant | `opspilot/assistant.py`| Ground a plan in the matched runbook + triage summary |
 | Gate      | `opspilot/gate.py`     | Resolve each step against the set of human approvals  |
 | LLM       | `opspilot/llm/`        | Provider-agnostic client with a fallback cascade      |
@@ -57,7 +59,19 @@ rotation" question matched the log-rotation runbook). The vectoriser is a
 `FeatureUnion` of a word view (1–2 grams) and a character view (`char_wb` 3–5
 grams); the character n-grams absorb an operator's wording ("503s" for "503")
 that a word-only model would miss, which is what lets a reworded incident still
-reach the right runbook.
+reach the right runbook. `rank` returns the full candidate list best-first (and
+`rank_batch` scores many incidents in one vectoriser pass); `match` is `rank`'s
+top result.
+
+This retriever is validated on real data. Treating each service in the public
+`Loukh1/IT-incidents` dataset as a runbook built from its training tickets,
+`opspilot/real_benchmark.py` routes held-out tickets to their service and reports
+top-1/top-3 accuracy and macro-F1 under stratified cross-validation and a held-out
+split, against majority-class and random baselines, with a shuffled-label control.
+Over the 12 most frequent services the engine routes at ~0.89 top-1 (≈0.98 top-3,
+macro-F1 ≈0.92) with a train/test gap near zero, while the control collapses to
+chance — a leakage-free, well-fit retriever. See the README's "Validated on real
+IT incidents" and `docs/estudio/04-evaluacion-datos-reales.md`.
 
 The match carries a score. On this library an in-domain incident scores ~0.35+
 and an out-of-domain one ~0.26 or below, so `OP_MIN_CONFIDENCE` (0.30) sits in
@@ -91,6 +105,7 @@ is safer than a single component that both advises and executes.
 - **Runbooks.** Add `Runbook`s with symptoms and steps; retrieval and gating pick
   them up unchanged.
 - **Retrieval.** TF-IDF can be swapped for a dense retriever behind the same
-  `match` interface.
+  `match`/`rank` interface; re-run `python -m opspilot.real_benchmark` to compare
+  routing accuracy on the real dataset.
 - **Executor.** An audited executor can consume an approved plan from the gate,
   outside this library.

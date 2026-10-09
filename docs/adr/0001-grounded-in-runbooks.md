@@ -30,4 +30,4 @@ the `summary` field, never in `steps`.
   should live anyway.
 - **Trade-off.** An incident with no matching runbook gets only a weak,
   low-confidence match. That is surfaced (see ADR 0003) as "needs human triage"
-  rather than papered over with an invented plan — the honest and safe behaviour.
+  rather than papered over with an invented plan — the grounded, safe behaviour.
